@@ -38,7 +38,7 @@ pub async fn ip_aggregate(
     connection: &mut MySqlConnection,
     limit: i64,
 ) -> tide::Result<Vec<IPAggregate>> {
-    let query = sqlx::query_as!(IPAggregate, " select ip,MIN(starttime) AS first_seen,MAX(starttime) AS last_seen, COUNT(sessions.id) AS sessions, COUNT(auth.id) AS auth_attempts, COUNT(input.id) AS commands, COUNT(downloads.id) AS downloads FROM sessions LEFT JOIN auth ON sessions.id=auth.session LEFT JOIN input ON sessions.id=input.session LEFT JOIN downloads ON sessions.id=downloads.session GROUP BY ip ORDER BY sessions DESC LIMIT ?;", limit)
+    let query = sqlx::query_as!(IPAggregate, " select ip,MIN(starttime) AS first_seen,MAX(starttime) AS last_seen, COUNT(sessions.id) AS sessions, COUNT(auth.id) AS auth_attempts, COUNT(input.id) AS commands, COUNT(downloads.id) AS downloads FROM sessions LEFT JOIN auth ON sessions.id=auth.session LEFT JOIN input ON sessions.id=input.session LEFT JOIN downloads ON sessions.id=downloads.session GROUP BY ip ORDER BY last_seen DESC LIMIT ?;", limit)
         .fetch_all(connection)
         .await
         .map_err(|e| tide::Error::new(409, e))?;
