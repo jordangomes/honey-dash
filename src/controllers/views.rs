@@ -56,3 +56,62 @@ pub async fn index(req: Request<State>) -> tide::Result {
         },
     )
 }
+
+#[derive(Serialize, Debug)]
+pub struct AuthView {
+    pub id: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub success: i8,
+    pub client: Option<String>,
+    pub time: String,
+}
+
+pub async fn ip_details(req: Request<State>) -> tide::Result {
+    let tera = req.state().tera.clone();
+    let mut db_pool = req.sqlx_conn::<MySql>().await;
+    let connection = db_pool.acquire().await?;
+
+    let ip_param = req.param("ip").unwrap_or("0.0.0.0");
+    let ip = ip_param.to_string();
+    let rows = handlers::sessions::ip_auth_attempts(connection, ip).await?;
+
+    let mut converted_rows: Vec<AuthView> = Vec::new();
+    for row in rows {
+        let timestamp_local: DateTime<Local> = Local::from_utc_datetime(&Local, &row.timestamp);
+        let now = chrono::offset::Local::now();
+
+        let mut formatter = timeago::Formatter::new();
+        formatter.num_items(2);
+        let time = formatter.convert_chrono(timestamp_local, now);
+
+        let success: i8 = match row.success {
+            None => 2,
+            Some(n) => {
+                if n == 0 {
+                    0
+                } else {
+                    1
+                }
+            }
+        };
+
+        converted_rows.push(AuthView {
+            id: row.id,
+            username: row.username,
+            password: row.password,
+            success,
+            client: row.client,
+            time,
+        });
+    }
+
+    tera.render_response(
+        "ip_details.html",
+        &context! {
+            "title" => format!("{} - honeydash", &ip_param),
+            "ip" => &ip_param,
+            "auth_attempts" => converted_rows
+        },
+    )
+}

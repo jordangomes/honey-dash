@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}
+ {{title}}
+{% endblock title %}
+{% block content %}
+{% if auth_attempts %}
+    <div class="row justify-content-center">
+        <div class="col-auto">
+        <h1 class="text-center">Sessions - {{ip}}</h1>
+            <!-- Show table on medium or larger screens -->
+            <table class="table table-striped d-none d-md-block">
+                <thead>
+                    <tr>
+                        <th>id</th>
+                	<th>timestamp</th>
+                        <th>username</th>
+                        <th>password</th>
+                	<th>client</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for auth in auth_attempts %}
+                    {% if auth.success == 1 %}
+                        <tr class="table-success">
+                    {% elif auth.success == 0 %}
+                        <tr class="table-danger">
+                    {% else %}
+                        <tr>
+                    {% endif %}
+                            <td>{{auth.id}}</td>
+                            <td>{{auth.time}}</td>
+                            <td>{{auth.username}}</td>
+                            <td>{{auth.password}}</td>
+                            <td>{{auth.client}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Show card on smaller screens -->
+    <div class="container d-xs-block d-md-none">
+        {%for auth in auth_attempts %}
+        {% if loop.index > 10%}{% break %}{% endif %}
+        <div class="row mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">id: {{auth.id}}</li>
+                        <li class="list-group-item">username: {{auth.username}}</li>
+                        <li class="list-group-item">password: {{auth.password}}</li>
+                        <li class="list-group-item">success: {{auth.success}}</li>
+                        <li class="list-group-item">client: {{auth.client}}</li>
+                        <li class="list-group-item">timestamp: {{auth.time}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock content %}
+
+{% block aditionalScripts %}
+{% endblock aditionalScripts %}

@@ -26,7 +26,7 @@
                 <tbody>
                     {%for ip in ip_aggregate %}
                     <tr>
-                        <td>{{ip.ip}}</td>
+                        <td><a href="/ip/{{ip.ip}}">{{ip.ip}}</a></td>
                         <td>{{ip.first_seen}}</td>
                         <td>{{ip.last_seen}}</td>
                         <td>{{ip.sessions}}</td>

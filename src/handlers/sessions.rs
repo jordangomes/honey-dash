@@ -24,21 +24,11 @@ pub struct IPAggregate {
     pub downloads: i64,
 }
 
-#[derive(Debug)]
-struct Auth {
-    id: u64,
-    session: Session,
-    success: bool,
-    username: String,
-    password: String,
-    timestamp: NaiveDateTime,
-}
-
 pub async fn ip_aggregate(
     connection: &mut MySqlConnection,
     limit: i64,
 ) -> tide::Result<Vec<IPAggregate>> {
-    let query = sqlx::query_as!(IPAggregate, " select ip,MIN(starttime) AS first_seen,MAX(starttime) AS last_seen, COUNT(sessions.id) AS sessions, COUNT(auth.id) AS auth_attempts, COUNT(input.id) AS commands, COUNT(downloads.id) AS downloads FROM sessions LEFT JOIN auth ON sessions.id=auth.session LEFT JOIN input ON sessions.id=input.session LEFT JOIN downloads ON sessions.id=downloads.session GROUP BY ip ORDER BY last_seen DESC LIMIT ?;", limit)
+    let query = sqlx::query_as!(IPAggregate, "select ip,MIN(starttime) AS first_seen,MAX(starttime) AS last_seen, COUNT(DISTINCT sessions.id) AS sessions, COUNT(DISTINCT auth.id) AS auth_attempts, COUNT(DISTINCT input.id) AS commands, COUNT(DISTINCT downloads.id) AS downloads FROM sessions LEFT JOIN auth ON sessions.id=auth.session LEFT JOIN input ON sessions.id=input.session LEFT JOIN downloads ON sessions.id=downloads.session GROUP BY ip ORDER BY last_seen DESC LIMIT ?;", limit)
         .fetch_all(connection)
         .await
         .map_err(|e| tide::Error::new(409, e))?;
@@ -70,6 +60,31 @@ pub async fn recent_auth_attempts(
         .fetch_all(connection)
         .await
         .map_err(|e| tide::Error::new(409, e))?;
+
+    Ok(query)
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Auth {
+    pub id: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub success: Option<i8>,
+    pub client: Option<String>,
+    pub timestamp: NaiveDateTime,
+}
+
+pub async fn ip_auth_attempts(
+    connection: &mut MySqlConnection,
+    ip: String,
+) -> tide::Result<Vec<Auth>> {
+    let query = sqlx::query_as!(
+        Auth,
+        "SELECT sessions.id, username, password, success, clients.version as client, starttime AS timestamp FROM sessions LEFT JOIN auth ON sessions.id=auth.session LEFT JOIN clients ON sessions.client=clients.id WHERE ip = ? ORDER BY starttime DESC LIMIT 100;", ip
+    )
+    .fetch_all(connection)
+    .await
+    .map_err(|e| tide::Error::new(409, e))?;
 
     Ok(query)
 }

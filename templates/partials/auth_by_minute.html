@@ -19,11 +19,11 @@
             let failure = [];
             for (const time of json) {
                 success.push({
-                    x: time.time,
+                    x: `${time.time}.00Z`,
                     y: time.success
                 })
                 failure.push({
-                    x: time.time,
+                    x: `${time.time}.00Z`,
                     y: time.failure
                 })
             }
