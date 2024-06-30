@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}
+ {{title}}
+{% endblock title %}
+
+{% block content %}
+    {% include "partials/auth_by_minute.html" %}
+{% if ip_aggregate %}
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <h1 class="text-center">IP Aggregate</h1>
+            <!-- Show table on medium or larger screens -->
+            <table class="table table-striped d-none d-md-block">
+                <thead>
+                    <tr>
+                        <th>IP</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                        <th>Sessions</th>
+                	<th>Auth Attempts</th>
+                	<th>Commands</th>
+                	<th>Downloads</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for ip in ip_aggregate %}
+                    <tr>
+                        <td>{{ip.ip}}</td>
+                        <td>{{ip.first_seen}}</td>
+                        <td>{{ip.last_seen}}</td>
+                        <td>{{ip.sessions}}</td>
+                        <td>{{ip.auth_attempts}}</td>
+                        <td>{{ip.commands}}</td>
+                        <td>{{ip.downloads}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Show card on smaller screens -->
+    <div class="container d-xs-block d-md-none">
+        {%for ip in ip_aggregate %}
+        {% if loop.index > 10%}{% break %}{% endif %}
+        <div class="row mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ip.ip}}</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">First Seen: {{ip.first_seen}}</li>
+                        <li class="list-group-item">Last Seen: {{ip.last_seen}}</li>
+                        <li class="list-group-item">Sessions: {{ip.sessions}}</li>
+                        <li class="list-group-item">Auth Attempts: {{ip.auth_attempts}}</li>
+                        <li class="list-group-item">Commands: {{ip.commands}}</li>
+                        <li class="list-group-item">Downloads: {{ip.downloads}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock content %}
+
+{% block aditionalScripts %}
+{% endblock aditionalScripts %}

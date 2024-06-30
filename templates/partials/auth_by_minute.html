@@ -1,0 +1,81 @@
+<div>
+  <canvas id="chart_auth_by_minute"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@^2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@^1"></script>
+<script type="module">
+    async function refreshData() {
+        const url = "/api/auth/byminute";
+        try {
+            const response = await fetch(url);
+            if(!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const json = await response.json();
+            
+            let success = [];
+            let failure = [];
+            for (const time of json) {
+                success.push({
+                    x: time.time,
+                    y: time.success
+                })
+                failure.push({
+                    x: time.time,
+                    y: time.failure
+                })
+            }
+
+            const ctx = document.getElementById('chart_auth_by_minute');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Success',
+                            data: success,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Failure',
+                            data: failure,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {
+                            type: 'timeseries',
+                            time: {
+                                unit: 'minute'
+                            },
+                            adapters: {
+                                date: {
+                                    locale: 'en-AU',
+                                    zone: 'UTC+10'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch(error) {
+            console.error(error.message)
+        }
+    }
+    
+    window.addEventListener("load", async () => {
+        await refreshData();
+    });
+
+</script>
+
+ 
+
+ 

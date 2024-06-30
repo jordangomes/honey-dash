@@ -1,0 +1,26 @@
+[package]
+name = "honey-dash"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["async-std-rt"]
+async-std-rt = ["async-std"]
+tokio-rt = ["tokio"]
+
+[dependencies]
+#WEB
+tide = "0.16.0"
+tide-sqlx = "0.6.1"
+tide-tera = "0.2.4"
+tera = "1.20.0" # templating engine
+
+#GENERAL
+serde = { version = "1.0", features = ["derive"] }
+async-std = { version = "1.10.0", features = ["attributes"], optional = true }
+tokio = { version = "1.11.0", features = ["full"], optional = true }
+chrono = "0.4.38" # time library
+timeago = "0.4.2"
+
+# DATABASE
+sqlx = { version = "0.5.13", default-features = false, features = ["runtime-async-std-native-tls", "mysql", "macros", "chrono"]}
