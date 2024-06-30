@@ -3,6 +3,8 @@ use sqlx::{mysql::MySql, Acquire};
 use tera::Tera;
 use tide_sqlx::{SQLxMiddleware, SQLxRequestExt};
 use tide_tera::prelude::*;
+use dotenv::dotenv;
+use std::env;
 
 mod controllers;
 mod handlers;
@@ -14,6 +16,8 @@ pub struct State {
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
+    dotenv().ok();
+
     let mut tera = Tera::new("templates/**/*").expect("Error parsing templates directory");
     tera.autoescape_on(vec!["html"]);
 
@@ -21,8 +25,9 @@ async fn main() -> tide::Result<()> {
 
     let mut app = tide::with_state(state);
 
+    let database_url_string: String = std::env::var("DATABASE_URL").expect("DATABASE_URL environment variable is not set");
     app.with(
-        SQLxMiddleware::<MySql>::new("mysql://honeydash:F9fD7ThLFG9orddn@localhost:3306/cowrie")
+        SQLxMiddleware::<MySql>::new(&database_url_string)
             .await?,
     );
 

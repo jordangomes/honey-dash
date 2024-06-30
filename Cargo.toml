@@ -21,6 +21,6 @@ async-std = { version = "1.10.0", features = ["attributes"], optional = true }
 tokio = { version = "1.11.0", features = ["full"], optional = true }
 chrono = "0.4.38" # time library
 timeago = "0.4.2"
-
+dotenv = "0.15.0"
 # DATABASE
 sqlx = { version = "0.5.13", default-features = false, features = ["runtime-async-std-native-tls", "mysql", "macros", "chrono"]}
